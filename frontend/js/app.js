@@ -26,19 +26,3 @@
 const API_URL = "http://localhost:3000/api/expenses";
 
 
-let myRequest=new XMLHttpRequest(); 
-myRequest.open("GET","https://api.github.com/users/sulimansharadqa/repos");
-myRequest.send();
-
-myRequest.onreadystatechange = () =>{
-    if(myRequest.status === 200 && myRequest.readyState === 4){
-        let jsData= JSON.parse(myRequest.responseText);
-        jsData.forEach(repo => {
-            let div= document.createElement('div');
-            let repoName= document.createTextNode(repo.full_name);
-            div.appendChild(repoName);
-            document.body.appendChild(div);
-        });
-    }
-};
-
