@@ -1,5 +1,7 @@
 // Expense Tracker - frontend logic
 
+//const test = require("node:test");
+
 // PHASE 2
 // Your backend from Phase 1 is already running, with real expenses in the
 // database (from schema.sql). Build this page directly against it with
@@ -23,6 +25,57 @@
 //     what the server actually saved - never update the table by hand.
 //   - The API is at http://localhost:3000/api/expenses (see the Roadmap).
 
-const API_URL = "http://localhost:3000/api/expenses";
+//const API_URL = "http://localhost:3000/api/expenses";
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Bootstrap alert popup
+
+const timerInSeconds = 10;    //Alert dismiss timer
+
+const alertPlaceholder = document.getElementById('liveAlertPlaceholder')
+
+const appendAlert = (message, type) => {
+    const wrapper = document.createElement('div')
+
+    wrapper.innerHTML = [
+        `<div class="alert alert-${type} alert-dismissible mt-2 fade show" role="alert">`,
+        `   <div>${message}</div>`,
+        '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+        '</div>'
+    ].join('')
+
+    const alert = wrapper.firstElementChild
+    alertPlaceholder.append(alert)
+
+    setTimeout(() => {
+        const bootstrapAlert = bootstrap.Alert.getOrCreateInstance(alert)
+        bootstrapAlert.close()
+    }, timerInSeconds * 1000)
+}
+
+const deleteExpenseTrigger = document.getElementById('confirm-delete')
+if (deleteExpenseTrigger) {
+    deleteExpenseTrigger.addEventListener('click', () => {
+        appendAlert('The expense has been deleted successfully!', 'danger')
+    })
+}
+
+const EditExpenseTrigger = document.getElementById('confirm-edit')
+if (EditExpenseTrigger) {
+    EditExpenseTrigger.addEventListener('click', () => {
+        appendAlert('The expense has been updated successfully!', 'success')
+    })
+}
