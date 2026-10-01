@@ -54,3 +54,8 @@ Phone view:
 ## Reflection
 
 The hardest part for me was connecting the frontend, Express API, and PostgreSQL database so that editing and deleting expenses stayed consistent with the summary totals. I spent time understanding how `fetch` requests work, how the API should validate input, and how the database queries needed to return the updated data after each action. The main challenge was making sure the summary cards still reflected the full list correctly after a user searched, filtered, or edited an expense. I solved this by tracing the data flow step by step, testing each route in the API, and checking the frontend logic to confirm that state updates and calculations matched the server response. This project helped me understand how the full stack works together and how small mistakes in data handling can affect the whole app.
+
+## Demo Video
+
+Demo Video url:
+<https://drive.google.com/file/d/1YjT2EmE5Aa2qCveE0ANoaz77WD9YJMfO/view?usp=sharing>
