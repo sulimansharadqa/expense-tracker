@@ -1,67 +1,62 @@
 # Expense Tracker
 
-This project is Expense Tracker application. It provides a REST API built with Node.js, Express, and PostgreSQL to manage personal expenses at backend level and HTML, CSS, JavaScript, Bootstrap at frontend level. Users can add, view, update, and delete expenses stored in a PostgreSQL database.
+A full-stack expense tracker with a Bootstrap frontend, an Express REST API, and PostgreSQL persistence. The interface supports creating, editing, deleting, searching, filtering, and sorting expenses, with summary totals based on the complete list.
 
-## How to run
+## Requirements
 
-### Backend
+- Node.js LTS and npm
+- PostgreSQL with pgAdmin (or another PostgreSQL client)
+- VS Code with Live Server to serve the frontend
 
-1. Open the backend folder:
+## Setup and run
 
-     ```bash
-     cd backend
-     ```
+### 1. Create the database
 
-2. Install dependencies
+In pgAdmin, create a database named `expense_tracker`. Open its Query Tool, load [`backend/schema.sql`](backend/schema.sql), and run it. The schema script drops and recreates the `expenses` table, so running it again resets the sample data.
 
-     ```bash
-     npm install
-     ```
+### 2. Configure and start the backend
 
-3. Database setup:
-     1. Open pgAdmin4.
-     2. Create a PostgreSQL database named `expense_tracker`.
-     3. Right click on the database and select `Query Tool`.
-     4. Load [schema.sql](backend/schema.sql) and execute the queries.
+From the project root, open a terminal and run:
 
-4. Configure Environment Variables:
-     1. Copy `.env.example` to create `.env`:
+```powershell
+cd backend
+Copy-Item .env.example .env
+npm install
+```
 
-     2. Open `.env` and configure your database credentials and port:
+Edit `backend/.env` with your local PostgreSQL credentials. Keep this file private and out of any submission archive. Then start the API:
 
-          ```env
-          DB_HOST=localhost
-          DB_PORT=5432
-          DB_USER=postgres
-          DB_PASSWORD=your_password_here
-          DB_NAME=expense_tracker
-          ```
+```powershell
+npm start
+```
 
-5. Start Server
+The API listens at `http://localhost:3000`. Keep this terminal open while using the app.
 
-     ```bash
-     node server.js
-     ```
+### 3. Open the frontend
 
-### Frontend
-
-1. ...
+In VS Code, open `frontend/index.html`, right-click in the editor, and select **Open with Live Server**. The frontend sends requests to `http://localhost:3000/api/expenses`.
 
 ## Features
 
-<!-- List what your app can do. Tick what you finished. -->
-
-- [ ] Add an expense (with validation)
-- [ ] Delete an expense
-- [ ] Edit an expense
-- [ ] Filter by category
-- [ ] Summary cards (total, count, highest)
-- [ ] Data is saved in a PostgreSQL database
+- [x] Add expenses with required-field and amount validation
+- [x] Edit and delete expenses through the API
+- [x] Search by title and filter by category; summaries include all expenses
+- [x] Sort by title, amount, category, or date using table headers
+- [x] Display total amount, expense count, and highest expense
+- [x] Persist expense data in PostgreSQL
+- [x] Show loading indicators and API/network error alerts
+- [x] Responsive summary cards and table layout
 
 ## Screenshots
 
-<!-- Add 2-3 screenshots of your app (desktop and mobile). -->
+Desktop view:
 
-## What was the hardest part?
+![Expense Tracker at desktop width](docs/screenshots/app-1280.png)
 
-<!-- A short paragraph: what got you stuck, and how did you solve it? -->
+Phone view:
+
+![Expense Tracker at phone width](docs/screenshots/app-375.png)
+
+## Reflection
+
+The hardest part for me was connecting the frontend, Express API, and PostgreSQL database so that editing and deleting expenses stayed consistent with the summary totals. I spent time understanding how `fetch` requests work, how the API should validate input, and how the database queries needed to return the updated data after each action. The main challenge was making sure the summary cards still reflected the full list correctly after a user searched, filtered, or edited an expense. I solved this by tracing the data flow step by step, testing each route in the API, and checking the frontend logic to confirm that state updates and calculations matched the server response. This project helped me understand how the full stack works together and how small mistakes in data handling can affect the whole app.

@@ -1,33 +1,4 @@
-// Expense Tracker - backend (Express API + PostgreSQL)
-//
-// PHASE 1
-// Setup:
-//   1. Create a database named expense_tracker and run schema.sql on it.
-//   2. Copy .env.example to a new file named .env and write your PostgreSQL password.
-//   3. npm install express cors pg dotenv
-// Run:    node server.js   (restart it every time you change this file)
-//
-// Endpoints you need to build:
-//   GET    /api/expenses        return all expenses
-//   GET    /api/expenses/:id    return one expense (404 if not found)
-//   POST   /api/expenses        add an expense (201, or 400 if the data is invalid)
-//   PUT    /api/expenses/:id    update an expense (200, 400, or 404)
-//   DELETE /api/expenses/:id    delete an expense (200, or 404)
-//
-// Tips:
-//   - Create one Pool (from the "pg" library) with the values from .env,
-//     and use pool.query(...) in every route.
-//   - ALWAYS send the values as parameters: pool.query("... WHERE id = $1", [id]).
-//     NEVER build the SQL text by joining strings with data from the user.
-//   - Use RETURNING to get the new (or updated) row back from INSERT and UPDATE.
-//   - The database creates the id. The client never sends one.
-//   - pg returns NUMERIC as text and DATE as a JavaScript Date, so fix both in your SELECT.
-//     Hint: amount::float8 and to_char(date, 'YYYY-MM-DD').
-//   - Validate the data before the query, and answer 400 with a message that explains the problem.
-//   - Check the id before the query. A text like "abc" makes PostgreSQL throw an error.
-//   - Enable CORS so the frontend can talk to the server.
-//   - Test every endpoint with Thunder Client BEFORE you connect the frontend.
-
+// Load database settings before creating the connection pool.
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -36,9 +7,11 @@ const { Pool } = require('pg');
 const app = express();
 const PORT = 3000;
 
+// Live Server uses another port, so the browser needs CORS permission.
 app.use(cors());
 app.use(express.json());
 
+// Reuse one pool rather than opening a new connection in every route.
 const pool = new Pool({
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
@@ -46,7 +19,6 @@ const pool = new Pool({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
 });
-
 
 const validCategories = [
     "Food",
@@ -56,8 +28,55 @@ const validCategories = [
     "Other"
 ];
 
+// SERIAL IDs must fit PostgreSQL's positive integer range.
+function isValidId(id) {
+    return /^\d+$/.test(id) && Number.isSafeInteger(Number(id)) && Number(id) > 0 && Number(id) <= 2147483647;
+}
 
-// Endpoint 1: Health Check
+// Browser validation helps the user; this also protects direct API requests.
+function validateExpense(data) {
+    if (!data || typeof data !== "object" || Array.isArray(data)) {
+        return "Expense data must be a JSON object";
+    }
+
+    if (typeof data.title !== "string" || !data.title.trim()) {
+        return "Title is required";
+    }
+
+    if (data.title.trim().length > 100) {
+        return "Title must be 100 characters or fewer";
+    }
+
+    if (typeof data.amount !== "number" || !Number.isFinite(data.amount) || data.amount < 0.01) {
+        return "Amount must be at least 0.01";
+    }
+
+    if (data.amount > 99999999.99) {
+        return "Amount must not exceed 99999999.99";
+    }
+
+    if (Math.round(data.amount * 100) / 100 !== data.amount) {
+        return "Amount must have no more than 2 decimal places";
+    }
+
+    if (!validCategories.includes(data.category)) {
+        return "Category must be one of the allowed values";
+    }
+
+    if (typeof data.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(data.date)) {
+        return "Date must be a valid date in YYYY-MM-DD format";
+    }
+
+    // A date like February 30 can roll into March, so compare it back to the input.
+    const parsedDate = new Date(`${data.date}T00:00:00.000Z`);
+    if (data.date.startsWith("0000-") || !Number.isFinite(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== data.date) {
+        return "Date must be a valid date in YYYY-MM-DD format";
+    }
+
+    return null;
+}
+
+// This checks Express only; it does not test the database connection.
 app.get('/api/health', (req, res) => {
     res.status(200).json({
         status: 'Online',
@@ -65,12 +84,9 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-
-// Endpoint 2: GET all expenses
+// Convert database amounts and dates to the values the frontend expects.
 app.get('/api/expenses', async (req, res) => {
-
     try {
-
         const result = await pool.query(
             `
             SELECT 
@@ -85,34 +101,24 @@ app.get('/api/expenses', async (req, res) => {
         );
 
         res.status(200).json(result.rows);
-
-    } catch(error) {
-
+    } catch (error) {
         console.error(error);
         res.status(500).json({
-            error:"Database query error"
+            error: "Database query error"
         });
-
     }
-
 });
 
+// $1 takes its value from the array, keeping user data out of the SQL text.
+app.get('/api/expenses/:id', async (req, res) => {
+    const { id } = req.params;
 
-// Endpoint 3: GET one expense
-app.get('/api/expenses/:id', async (req,res)=>{
-
-    const {id}=req.params;
-
-
-    if(isNaN(id)){
-        return res.status(400).json({
-            message:"Invalid id"
+    if (!isValidId(id)) {
+        return res.status(404).json({
+            message: "Expense not found"
         });
     }
-
-
-    try{
-
+    try {
         const result = await pool.query(
             `
             SELECT 
@@ -127,106 +133,76 @@ app.get('/api/expenses/:id', async (req,res)=>{
             [id]
         );
 
-
-        if(result.rows.length===0){
+        if (result.rows.length === 0) {
             return res.status(404).json({
-                message:"Expense not found"
+                message: "Expense not found"
             });
         }
 
-
         res.status(200).json(result.rows[0]);
-
-
-    }catch(error){
-
+    } catch (error) {
         console.error(error);
 
         res.status(500).json({
-            error:"Database query error"
+            error: "Database query error"
         });
-
     }
-
 });
 
-
-// Endpoint 4: POST create expense
-app.post('/api/expenses', async(req,res)=>{
-
-    const {title, amount, category, date}=req.body;
-
-
-    if(
-        !title ||
-        !amount ||
-        amount <=0 ||
-        !date ||
-        !validCategories.includes(category)
-    ){
+// PostgreSQL creates the ID. RETURNING gives us the newly saved row.
+app.post('/api/expenses', async (req, res) => {
+    const validationError = validateExpense(req.body);
+    if (validationError) {
         return res.status(400).json({
-            message:"Invalid expense data"
+            message: validationError
         });
     }
 
-
-    try{
-
+    const { title, amount, category, date } = req.body;
+    try {
         const result = await pool.query(
             `
             INSERT INTO expenses(title,amount,category,date)
             VALUES($1,$2,$3,$4)
-            RETURNING *
+            RETURNING
+                id,
+                title,
+                amount::float8 AS amount,
+                category,
+                to_char(date, 'YYYY-MM-DD') AS date
             `,
-            [title,amount,category,date]
+            [title.trim(), amount, category, date]
         );
 
-
         res.status(201).json(result.rows[0]);
-
-
-    }catch(error){
-
+    } catch (error) {
         console.error(error);
 
         res.status(500).json({
-            error:"Database query error"
+            error: "Database query error"
         });
-
     }
-
 });
 
+// Check both the ID and the complete expense before updating it.
+app.put('/api/expenses/:id', async (req, res) => {
+    const { id } = req.params;
 
-// Endpoint 5: PUT update expense
-app.put('/api/expenses/:id', async(req,res)=>{
-
-    const {id}=req.params;
-    const {title,amount,category,date}=req.body;
-
-
-    if(isNaN(id)){
-        return res.status(400).json({
-            message:"Invalid id"
+    if (!isValidId(id)) {
+        return res.status(404).json({
+            message: "Expense not found"
         });
     }
 
-
-    if(
-        !title ||
-        !amount ||
-        amount<=0 ||
-        !date ||
-        !validCategories.includes(category)
-    ){
+    const validationError = validateExpense(req.body);
+    if (validationError) {
         return res.status(400).json({
-            message:"Invalid expense data"
+            message: validationError
         });
     }
 
-
-    try{
-
+    const { title, amount, category, date } = req.body;
+    try {
         const result = await pool.query(
             `
             UPDATE expenses
@@ -235,50 +211,42 @@ app.put('/api/expenses/:id', async(req,res)=>{
                 category=$3,
                 date=$4
             WHERE id=$5
-            RETURNING *
+            RETURNING
+                id,
+                title,
+                amount::float8 AS amount,
+                category,
+                to_char(date, 'YYYY-MM-DD') AS date
             `,
-            [title,amount,category,date,id]
+            [title.trim(), amount, category, date, id]
         );
 
-
-        if(result.rows.length===0){
+        if (result.rows.length === 0) {
             return res.status(404).json({
-                message:"Expense not found"
+                message: "Expense not found"
             });
         }
 
-
         res.status(200).json(result.rows[0]);
-
-
-    }catch(error){
-
+    } catch (error) {
         console.error(error);
 
         res.status(500).json({
-            error:"Database query error"
+            error: "Database query error"
         });
-
     }
-
 });
 
+// No returned row means there was no expense with this ID.
+app.delete('/api/expenses/:id', async (req, res) => {
+    const { id } = req.params;
 
-// Endpoint 6: DELETE expense
-app.delete('/api/expenses/:id', async(req,res)=>{
-
-    const {id}=req.params;
-
-
-    if(isNaN(id)){
-        return res.status(400).json({
-            message:"Invalid id"
+    if (!isValidId(id)) {
+        return res.status(404).json({
+            message: "Expense not found"
         });
     }
-
-
-    try{
-
+    try {
         const result = await pool.query(
             `
             DELETE FROM expenses
@@ -288,33 +256,36 @@ app.delete('/api/expenses/:id', async(req,res)=>{
             [id]
         );
 
-
-        if(result.rows.length===0){
+        if (result.rows.length === 0) {
             return res.status(404).json({
-                message:"Expense not found"
+                message: "Expense not found"
             });
         }
 
-
         res.status(200).json({
-            message:"Expense deleted successfully",
-            expense:result.rows[0]
+            message: "Expense deleted successfully",
+            expense: result.rows[0]
         });
-
-
-    }catch(error){
-
+    } catch (error) {
         console.error(error);
 
         res.status(500).json({
-            error:"Database query error"
+            error: "Database query error"
         });
-
     }
-
 });
 
+// Invalid JSON fails in express.json(), before it can reach a route.
+app.use((error, req, res, next) => {
+    if (error.type === 'entity.parse.failed') {
+        return res.status(400).json({
+            message: 'Request body must be valid JSON'
+        });
+    }
 
-app.listen(PORT,()=>{
+    next(error);
+});
+
+app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

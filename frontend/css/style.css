@@ -1,2 +1,41 @@
-/* Your custom styles go here.
-   Use Bootstrap classes first, and write your own CSS only when you need to. */
+.stats-grid {
+   display: grid;
+   grid-template-columns: repeat(3, minmax(0, 1fr));
+   gap: 1rem;
+}
+
+.stats-grid > div {
+   min-width: 0;
+}
+
+.stats-grid .card {
+   min-height: 140px;
+   height: 100%;
+}
+
+.table-sort-button {
+   display: inline-flex;
+   align-items: center;
+   gap: 0.25rem;
+   padding: 0;
+   border: 0;
+   background: transparent;
+   color: inherit;
+   font: inherit;
+   font-weight: 600;
+}
+
+.table-sort-button:hover,
+.table-sort-button:focus-visible {
+   text-decoration: underline;
+}
+
+button[data-action] {
+   width: 80px;
+}
+
+@media (max-width: 767.98px) {
+   .stats-grid {
+      grid-template-columns: minmax(0, 1fr);
+   }
+}

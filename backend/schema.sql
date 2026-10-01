@@ -1,3 +1,4 @@
+
 -- Expense Tracker: database schema
 -- Run this file once to create the table and add some sample data.
 -- Running it again deletes the table and starts from the sample data.
@@ -22,4 +23,4 @@ INSERT INTO expenses (title, amount, category, date) VALUES
   ('Taxi',             6.00,  'Transport',     '2026-02-04'),
   ('Internet bill',    20.00, 'Bills',         '2026-02-07');
 
-SELECT * FROM expenses;
+SELECT * FROM expenses ORDER BY ID;
