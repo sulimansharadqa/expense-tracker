@@ -16,15 +16,9 @@ In pgAdmin, create a database named `expense_tracker`. Open its Query Tool, load
 
 ### 2. Configure and start the backend
 
-From the project root, open a terminal and run:
+From the backend folder, make a copy of `.env.example` as `.env`:
 
-```powershell
-cd backend
-Copy-Item .env.example .env
-npm install
-```
-
-Edit `backend/.env` with your local PostgreSQL credentials. Keep this file private and out of any submission archive. Then start the API:
+Edit `backend/.env` with your local PostgreSQL credentials. Then start the API:
 
 ```powershell
 npm start
@@ -51,11 +45,11 @@ In VS Code, open `frontend/index.html`, right-click in the editor, and select **
 
 Desktop view:
 
-![Expense Tracker at desktop width](docs/screenshots/app-1280.png)
+![Expense Tracker at desktop width](docs/screenshots/app-desktop.png)
 
 Phone view:
 
-![Expense Tracker at phone width](docs/screenshots/app-375.png)
+![Expense Tracker at phone width](docs/screenshots/app-mobile.png)
 
 ## Reflection
 

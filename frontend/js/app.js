@@ -6,7 +6,7 @@ const networkErrorReconnectTime = 5;
 // For Control the theme
 const themeData = document.documentElement.attributes.getNamedItem('data-bs-theme');
 const navbar = document.getElementById('nav');
-const toggleThemeButton= document.getElementById('toggle-theme');
+const toggleThemeButton = document.getElementById('toggle-theme');
 // Stats Card Section
 const statsCards = document.getElementById('stats-cards');
 const statsExpensesLoading = document.getElementById('stats-expenses-loading');
@@ -50,13 +50,13 @@ const alertAddExpense = document.getElementById('liveAlertAddExpense');
 // helper function to toggle the theme
 function toggleTheme() {
     if (themeData.value == 'light') {
-        themeData.value='dark';
+        themeData.value = 'dark';
         navbar.classList.add('border-0', 'border-bottom');
-        navbar.style.borderBottomColor='#ffffff26';
+        navbar.style.borderBottomColor = '#ffffff26';
         document.body.classList.add('bg-dark');
         document.body.classList.remove('bg-light');
-    }else if (themeData.value == 'dark') {
-        themeData.value='light';
+    } else if (themeData.value == 'dark') {
+        themeData.value = 'light';
         navbar.classList.remove('border-0', 'border-bottom', 'border-secondary');
         navbar.removeAttribute('style');
         document.body.classList.add('bg-light');
@@ -64,12 +64,12 @@ function toggleTheme() {
     }
 }
 // event listener to toggle theme
-toggleThemeButton.addEventListener('click',toggleTheme);
+toggleThemeButton.addEventListener('click', toggleTheme);
 
 // Use textContent so a message containing HTML cannot run as code.
 function appendAlertTo(target, message, type) {
     const alert = document.createElement('div');
-    alert.className = `alert alert-${type} alert-dismissible mt-2 fade show`;
+    alert.className = `mt-2 alert alert-${type} alert-dismissible fade show`;
     alert.setAttribute('role', 'alert');
 
     const text = document.createElement('div');
