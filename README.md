@@ -57,5 +57,10 @@ The hardest part for me was connecting the frontend, Express API, and PostgreSQL
 
 ## Demo Video
 
-Demo Video url:
+Demo Video URL:
 <https://drive.google.com/file/d/1YjT2EmE5Aa2qCveE0ANoaz77WD9YJMfO/view?usp=sharing>
+
+## Github Repository
+
+Github Repository link:
+<https://github.com/sulimansharadqa/expense-tracker>
