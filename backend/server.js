@@ -275,7 +275,7 @@ app.delete('/api/expenses/:id', async (req, res) => {
     }
 });
 
-// Invalid JSON fails in express.json(), before it can reach a route.
+// check for valid body (must be json)
 app.use((error, req, res, next) => {
     if (error.type === 'entity.parse.failed') {
         return res.status(400).json({

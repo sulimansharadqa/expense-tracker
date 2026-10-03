@@ -302,8 +302,19 @@ expensesTableBody.addEventListener("click", (event) => {
 
 // Listen to submit so the browser checks required, min and step first.
 const addExpenseForm = addExpense.closest("form");
+titleField.addEventListener("input", () => {
+    titleField.setCustomValidity(titleField.value.trim() ? "" : "Please enter an expense title.");
+});
+
 addExpenseForm.addEventListener("submit", async (event) => {
     event.preventDefault();
+
+    titleField.setCustomValidity(titleField.value.trim() ? "" : "Please enter an expense title.");
+    addExpenseForm.classList.add("was-validated");
+    if (!addExpenseForm.checkValidity()) {
+        addExpenseForm.reportValidity();
+        return;
+    }
 
     const newExpense = {
         title: titleField.value.trim(),
@@ -326,6 +337,8 @@ addExpenseForm.addEventListener("submit", async (event) => {
 
         // Clear inputs only after the server confirms the save.
         addExpenseForm.reset();
+        addExpenseForm.classList.remove("was-validated");
+        titleField.setCustomValidity("");
         await loadExpenses();
         appendExpenseAlert("Expense added.", "success");
     } catch (error) {
